@@ -1,0 +1,361 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ZenTask Pro | Advanced Productivity</title>
+    <meta name="description" content="A modern, feature-rich productivity app with subtasks, recurring tasks, workspaces, and more.">
+
+    <!-- Google Fonts: Inter + JetBrains Mono -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+
+    <!-- Lucide Icons -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+
+    <!-- Canvas Confetti -->
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+
+    <link rel="stylesheet" href="style.css">
+</head>
+<body class="dark-theme">
+    <!-- Background -->
+    <div class="background-gradient"></div>
+    <div class="background-noise"></div>
+
+    <!-- Sidebar -->
+    <aside id="sidebar" class="sidebar" role="navigation" aria-label="Main navigation">
+        <div class="sidebar-header">
+            <div class="logo">
+                <div class="logo-mark"><i data-lucide="zap"></i></div>
+                <span class="logo-text">ZenTask<span class="pro-badge">PRO</span></span>
+            </div>
+            <button id="sidebar-close" class="icon-btn sidebar-close-btn" aria-label="Close sidebar">
+                <i data-lucide="panel-left-close"></i>
+            </button>
+        </div>
+
+        <!-- Workspace Selector -->
+        <div class="sidebar-section">
+            <label class="sidebar-label">Workspace</label>
+            <div class="workspace-selector">
+                <select id="workspace-select" aria-label="Select workspace">
+                    <option value="default">Personal</option>
+                </select>
+                <button id="add-workspace-btn" class="icon-btn-xs" title="Add Workspace" aria-label="Add workspace">
+                    <i data-lucide="plus"></i>
+                </button>
+            </div>
+        </div>
+
+        <!-- Navigation -->
+        <nav class="sidebar-nav">
+            <button class="nav-item active" data-view="tasks" aria-label="View all tasks">
+                <i data-lucide="inbox"></i><span>All Tasks</span>
+                <span class="nav-count" id="nav-count-all">0</span>
+            </button>
+            <button class="nav-item" data-view="today" aria-label="View today's tasks">
+                <i data-lucide="sun"></i><span>Today</span>
+                <span class="nav-count" id="nav-count-today">0</span>
+            </button>
+            <button class="nav-item" data-view="upcoming" aria-label="View upcoming tasks">
+                <i data-lucide="calendar"></i><span>Upcoming</span>
+                <span class="nav-count" id="nav-count-upcoming">0</span>
+            </button>
+            <button class="nav-item" data-view="overdue" aria-label="View overdue tasks">
+                <i data-lucide="alert-triangle"></i><span>Overdue</span>
+                <span class="nav-count overdue-count" id="nav-count-overdue">0</span>
+            </button>
+            <button class="nav-item" data-view="completed" aria-label="View completed tasks">
+                <i data-lucide="check-circle-2"></i><span>Completed</span>
+                <span class="nav-count" id="nav-count-completed">0</span>
+            </button>
+        </nav>
+
+        <!-- Categories -->
+        <div class="sidebar-section">
+            <label class="sidebar-label">Categories</label>
+            <div class="category-list" id="category-list">
+                <!-- Dynamically generated -->
+            </div>
+        </div>
+
+        <!-- Stats Dashboard -->
+        <div class="sidebar-section sidebar-stats">
+            <label class="sidebar-label">Statistics</label>
+            <div class="mini-stats">
+                <div class="mini-stat">
+                    <span class="mini-stat-value" id="stat-streak">0</span>
+                    <span class="mini-stat-label">Day Streak</span>
+                </div>
+                <div class="mini-stat">
+                    <span class="mini-stat-value" id="stat-today-done">0</span>
+                    <span class="mini-stat-label">Done Today</span>
+                </div>
+                <div class="mini-stat">
+                    <span class="mini-stat-value" id="stat-week-done">0</span>
+                    <span class="mini-stat-label">This Week</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Sidebar Footer -->
+        <div class="sidebar-footer">
+            <button id="theme-toggle" class="icon-btn" title="Toggle Theme" aria-label="Toggle dark/light theme">
+                <i data-lucide="sun" id="theme-icon-sun"></i>
+                <i data-lucide="moon" id="theme-icon-moon" class="hidden"></i>
+            </button>
+            <button id="export-btn" class="icon-btn" title="Export Tasks (JSON)" aria-label="Export tasks">
+                <i data-lucide="download"></i>
+            </button>
+            <button id="import-btn" class="icon-btn" title="Import Tasks (JSON)" aria-label="Import tasks">
+                <i data-lucide="upload"></i>
+            </button>
+        </div>
+    </aside>
+
+    <!-- Main Content -->
+    <main class="main-content" role="main">
+        <!-- Top Bar -->
+        <header class="topbar">
+            <div class="topbar-left">
+                <button id="sidebar-toggle" class="icon-btn" title="Toggle Sidebar" aria-label="Toggle sidebar">
+                    <i data-lucide="menu"></i>
+                </button>
+                <h2 id="view-title" class="view-title">All Tasks</h2>
+            </div>
+            <div class="topbar-right">
+                <div class="search-bar" role="search">
+                    <i data-lucide="search" class="search-icon"></i>
+                    <input type="text" id="search-input" placeholder="Search tasks..." aria-label="Search tasks" autocomplete="off">
+                    <kbd class="search-kbd">/</kbd>
+                </div>
+            </div>
+        </header>
+
+        <!-- Progress Section -->
+        <section class="progress-section" aria-label="Task progress">
+            <div class="progress-info">
+                <span id="task-count">0 of 0 tasks</span>
+                <span id="progress-percent" class="progress-percent-text">0%</span>
+            </div>
+            <div class="progress-track">
+                <div id="progress-bar-fill" class="progress-fill"></div>
+            </div>
+        </section>
+
+        <!-- Toolbar -->
+        <section class="toolbar" aria-label="Task controls">
+            <div class="toolbar-left">
+                <!-- Filter pills -->
+                <div class="filter-pills" role="tablist" aria-label="Filter tasks">
+                    <button class="filter-pill active" data-filter="all" role="tab" aria-selected="true">All</button>
+                    <button class="filter-pill" data-filter="pending" role="tab" aria-selected="false">Pending</button>
+                    <button class="filter-pill" data-filter="completed" role="tab" aria-selected="false">Done</button>
+                    <button class="filter-pill" data-filter="high" role="tab" aria-selected="false">High</button>
+                    <button class="filter-pill" data-filter="critical" role="tab" aria-selected="false">Critical</button>
+                </div>
+            </div>
+            <div class="toolbar-right">
+                <!-- Sort -->
+                <div class="sort-control">
+                    <label for="sort-select" class="sr-only">Sort by</label>
+                    <select id="sort-select" aria-label="Sort tasks">
+                        <option value="created-desc">Newest First</option>
+                        <option value="created-asc">Oldest First</option>
+                        <option value="due-asc">Due Date ↑</option>
+                        <option value="due-desc">Due Date ↓</option>
+                        <option value="priority-desc">Priority ↑</option>
+                        <option value="priority-asc">Priority ↓</option>
+                        <option value="alpha-asc">A → Z</option>
+                        <option value="alpha-desc">Z → A</option>
+                    </select>
+                </div>
+                <!-- Bulk Actions -->
+                <button id="bulk-delete-completed" class="toolbar-btn danger-text" title="Delete all completed tasks" aria-label="Delete completed tasks">
+                    <i data-lucide="trash-2"></i>
+                    <span>Clear Done</span>
+                </button>
+            </div>
+        </section>
+
+        <!-- Quick Add -->
+        <section class="quick-add-section" aria-label="Add a new task">
+            <div class="quick-add-card">
+                <div class="quick-add-top">
+                    <i data-lucide="plus-circle" class="quick-add-icon"></i>
+                    <input type="text" id="task-title-input" placeholder="Add a new task..." autocomplete="off" aria-label="Task title">
+                    <button id="voice-input-btn" class="icon-btn-sm" title="Voice Input" aria-label="Voice input">
+                        <i data-lucide="mic"></i>
+                    </button>
+                </div>
+                <div class="quick-add-details" id="quick-add-details">
+                    <input type="text" id="task-desc-input" placeholder="Description (optional)" aria-label="Task description">
+                    <div class="quick-add-meta">
+                        <select id="task-priority" aria-label="Task priority">
+                            <option value="low">🟢 Low</option>
+                            <option value="medium" selected>🟡 Medium</option>
+                            <option value="high">🟠 High</option>
+                            <option value="critical">🔴 Critical</option>
+                        </select>
+                        <select id="task-category" aria-label="Task category">
+                            <option value="General">📁 General</option>
+                            <option value="Work">💼 Work</option>
+                            <option value="Personal">🏠 Personal</option>
+                            <option value="Study">📚 Study</option>
+                            <option value="Fitness">🏋️ Fitness</option>
+                            <option value="Finance">💰 Finance</option>
+                        </select>
+                        <input type="datetime-local" id="task-due" aria-label="Due date and time">
+                        <input type="text" id="task-tags" placeholder="Tags (comma separated)" aria-label="Tags">
+                        <input type="color" id="task-color" value="#6366f1" title="Color label" aria-label="Color label">
+                        <select id="task-recurrence" aria-label="Recurrence">
+                            <option value="none">No Repeat</option>
+                            <option value="daily">Daily</option>
+                            <option value="weekly">Weekly</option>
+                            <option value="monthly">Monthly</option>
+                        </select>
+                    </div>
+                    <div class="quick-add-actions">
+                        <button id="add-task-btn" class="primary-btn" aria-label="Add task">
+                            <i data-lucide="plus"></i>
+                            <span>Add Task</span>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Task List -->
+        <section class="task-list-section" aria-label="Task list">
+            <div id="task-list" class="task-list" role="list">
+                <!-- Tasks injected by JS -->
+            </div>
+            <div id="empty-state" class="empty-state" role="status">
+                <div class="empty-illustration">
+                    <i data-lucide="clipboard-list"></i>
+                </div>
+                <h3>No tasks here</h3>
+                <p>Add a task above to get started with your productivity journey.</p>
+            </div>
+        </section>
+    </main>
+
+    <!-- Undo Snackbar -->
+    <div id="undo-snackbar" class="snackbar hidden" role="alert" aria-live="polite">
+        <span>Task deleted</span>
+        <button id="undo-btn" class="snackbar-action">Undo</button>
+    </div>
+
+    <!-- Task Detail / Edit Modal -->
+    <div id="task-modal" class="modal-overlay hidden" role="dialog" aria-modal="true" aria-label="Task details">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 id="modal-title">Edit Task</h2>
+                <button id="close-modal" class="icon-btn-sm" aria-label="Close modal"><i data-lucide="x"></i></button>
+            </div>
+            <div class="modal-body">
+                <div class="form-group">
+                    <label for="edit-title">Title *</label>
+                    <input type="text" id="edit-title" required>
+                </div>
+                <div class="form-group">
+                    <label for="edit-description">Description</label>
+                    <textarea id="edit-description" rows="3"></textarea>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="edit-priority">Priority</label>
+                        <select id="edit-priority">
+                            <option value="low">🟢 Low</option>
+                            <option value="medium">🟡 Medium</option>
+                            <option value="high">🟠 High</option>
+                            <option value="critical">🔴 Critical</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="edit-category">Category</label>
+                        <select id="edit-category">
+                            <option value="General">📁 General</option>
+                            <option value="Work">💼 Work</option>
+                            <option value="Personal">🏠 Personal</option>
+                            <option value="Study">📚 Study</option>
+                            <option value="Fitness">🏋️ Fitness</option>
+                            <option value="Finance">💰 Finance</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="edit-due">Due Date & Time</label>
+                        <input type="datetime-local" id="edit-due">
+                    </div>
+                    <div class="form-group">
+                        <label for="edit-recurrence">Recurrence</label>
+                        <select id="edit-recurrence">
+                            <option value="none">No Repeat</option>
+                            <option value="daily">Daily</option>
+                            <option value="weekly">Weekly</option>
+                            <option value="monthly">Monthly</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="edit-tags">Tags</label>
+                        <input type="text" id="edit-tags" placeholder="e.g. urgent, design">
+                    </div>
+                    <div class="form-group">
+                        <label for="edit-color">Color Label</label>
+                        <input type="color" id="edit-color" value="#6366f1">
+                    </div>
+                </div>
+                <!-- Notes -->
+                <div class="form-group">
+                    <label for="edit-notes">Notes</label>
+                    <textarea id="edit-notes" rows="3" placeholder="Additional notes..."></textarea>
+                </div>
+                <!-- Attachments -->
+                <div class="form-group">
+                    <label>Attachments</label>
+                    <div class="attachments-area">
+                        <div id="attachment-list" class="attachment-list"></div>
+                        <label class="attachment-add" tabindex="0" role="button" aria-label="Add attachment">
+                            <i data-lucide="paperclip"></i>
+                            <span>Add file</span>
+                            <input type="file" id="edit-attachment" multiple hidden>
+                        </label>
+                    </div>
+                </div>
+                <!-- Subtasks -->
+                <div class="form-group">
+                    <label>Subtasks</label>
+                    <div id="subtask-list" class="subtask-list"></div>
+                    <div class="subtask-add">
+                        <input type="text" id="subtask-input" placeholder="Add a subtask..." aria-label="New subtask title">
+                        <button id="add-subtask-btn" class="icon-btn-sm" aria-label="Add subtask"><i data-lucide="plus"></i></button>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button id="cancel-edit" class="secondary-btn">Cancel</button>
+                <button id="save-edit" class="primary-btn">
+                    <i data-lucide="check"></i>
+                    <span>Save Changes</span>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Floating Action Button -->
+    <button id="fab-add" class="fab" aria-label="Add new task">
+        <i data-lucide="plus"></i>
+    </button>
+
+    <!-- Hidden file input for import -->
+    <input type="file" id="import-file-input" accept=".json" hidden aria-hidden="true">
+
+    <script src="script.js"></script>
+</body>
+</html>
