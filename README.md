@@ -15,17 +15,6 @@ A modern and feature-rich To-Do List application designed to help users organize
 - 💾 Persistent data storage
 - 📱 Responsive design for desktop and mobile
 
-## 📸 Screenshots
-
-Add screenshots of your application here.
-
-```
-screenshots/
-├── home.png
-├── add-task.png
-└── completed-tasks.png
-```
-
 ## 🛠️ Tech Stack
 
 - Frontend: HTML, CSS, JavaScript
@@ -38,21 +27,20 @@ screenshots/
 ### Clone the Repository
 
 ```bash
-git clone https://github.com/your-username/advanced-todo-list.git
+git clone https://github.com/notrobo-codes/Zendesk_pro.git
 ```
 
 ### Navigate to Project Directory
 
 ```bash
-cd advanced-todo-list
+cd Zendesk_pro
 ```
 
 ### Run the Application
 
-If it's a simple web project:
 
 ```bash
-open index.html
+python3 -m http.server 8000
 ```
 
 Or simply open `index.html` in your browser.
